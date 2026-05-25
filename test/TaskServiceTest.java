@@ -1,6 +1,8 @@
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -94,8 +96,8 @@ public class TaskServiceTest {
 		String testFileName = "test-tasks.txt";
 		
 		TaskFileRepository fileRepository = new TaskFileRepository(testFileName);
-		TaskRepository repository = new TaskMemoryRepository();
-		TaskService service = new TaskService(repository, fileRepository);
+		TaskRepository     repository     = new TaskMemoryRepository();
+		TaskService        service        = new TaskService(repository, fileRepository);
 		
 		service.addTask("Java lernen", TaskPriority.MEDIUM);
 		service.markTaskAsCompleted(1);
@@ -117,5 +119,31 @@ public class TaskServiceTest {
 				TaskStatus.DONE,
 				secondFileRepository.loadTasks().get(0).getStatus()
 		);
+	}
+	
+	@Test
+	void shouldSortTasksByPriority() {
+		service.addTask("Low Task", TaskPriority.LOW);
+		service.addTask("High Task", TaskPriority.HIGH);
+		service.addTask("Medium Task", TaskPriority.MEDIUM);
+		
+		List<Task> sortedTasks = service.getTasksSortedByPriority();
+		
+		assertEquals(TaskPriority.HIGH, sortedTasks.get(0).getPriority());
+		assertEquals(TaskPriority.MEDIUM, sortedTasks.get(1).getPriority());
+		assertEquals(TaskPriority.LOW, sortedTasks.get(2).getPriority());
+	}
+	
+	@Test
+	void shouldFilterTasksByPriority() {
+		service.addTask("Low Task", TaskPriority.LOW);
+		service.addTask("High Task", TaskPriority.HIGH);
+		service.addTask("Another High Task", TaskPriority.HIGH);
+		
+		List<Task> highTasks = service.getTasksByPriority(TaskPriority.HIGH);
+		
+		assertEquals(2, highTasks.size());
+		assertEquals(TaskPriority.HIGH, highTasks.get(0).getPriority());
+		assertEquals(TaskPriority.HIGH, highTasks.get(1).getPriority());
 	}
 }

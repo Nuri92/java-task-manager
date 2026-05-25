@@ -134,17 +134,12 @@ public class TaskService {
 	}
 	
 	public void showTasksSortedByPriority() {
-		List<Task> tasks = new ArrayList<>(repository.findAll());
+		List<Task> tasks = getTasksSortedByPriority();
 		
 		if (tasks.isEmpty()) {
 			System.out.println("Keine Tasks vorhanden.");
 			return;
 		}
-		
-		tasks.sort(
-				Comparator.comparing(Task::getPriority)
-				          .reversed()
-		);
 		
 		for (Task currentTask : tasks) {
 			printTask(currentTask);
@@ -160,5 +155,40 @@ public class TaskService {
 						+ " (" + status + ")"
 						+ " [" + task.getPriority() + "]"
 		);
+	}
+	
+	public List<Task> getTasksSortedByPriority() {
+		List<Task> tasks = new ArrayList<>(repository.findAll());
+		
+		tasks.sort(
+				Comparator.comparing(Task::getPriority)
+				          .reversed()
+		);
+		
+		return tasks;
+	}
+	
+	public void showTasksByPriority(TaskPriority priority) {
+		List<Task> tasks = getTasksByPriority(priority);
+		
+		if (tasks.isEmpty()) {
+			System.out.println("Keine Tasks gefunden.");
+			return;
+		}
+		
+		for (Task currentTask : tasks) {
+			printTask(currentTask);
+		}
+	}
+	
+	public List<Task> getTasksByPriority(TaskPriority priority) {
+		List<Task> filteredTasks = new ArrayList<>();
+		
+		for (Task currentTask : repository.findAll()) {
+			if (currentTask.getPriority() == priority) {
+				filteredTasks.add(currentTask);
+			}
+		}
+		return filteredTasks;
 	}
 }

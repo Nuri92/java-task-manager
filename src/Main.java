@@ -21,8 +21,11 @@ public class Main {
 			System.out.println("4 - Task erledigen");
 			System.out.println("5 - Task löschen");
 			System.out.println("6 - Task suchen");
-			System.out.println("7 - Tasks sortieren");
-			System.out.println("8 - Beenden");
+			System.out.println("7 - Nach Priorität sortiert anzeigen");
+			System.out.println("8 - Nur HIGH Tasks anzeigen");
+			System.out.println("9 - Nur MEDIUM Tasks anzeigen");
+			System.out.println("10 - Nur LOW Tasks anzeigen");
+			System.out.println("11 - Beenden");
 			System.out.println("Auswahl: ");
 			
 			int choice = readInt(scanner);
@@ -54,7 +57,10 @@ public class Main {
 				}
 				case 6 -> searchTask(scanner, taskService);
 				case 7 -> taskService.showTasksSortedByPriority();
-				case 8 -> {
+				case 8 -> taskService.showTasksByPriority(TaskPriority.HIGH);
+				case 9 -> taskService.showTasksByPriority(TaskPriority.MEDIUM);
+				case 10 -> taskService.showTasksByPriority(TaskPriority.LOW);
+				case 11 -> {
 					taskService.saveTasks();
 					System.out.println("Tasks wurden gespeichert.");
 					System.out.println("Programm wird beendet");
