@@ -6,7 +6,7 @@ public class Main {
 		
 		Scanner            scanner        = new Scanner(System.in);
 		TaskRepository     taskRepository = new TaskMemoryRepository();
-		TaskFileRepository fileRepository = new TaskFileRepository();
+		TaskFileRepository fileRepository = new TaskFileRepository("task.txt");
 		TaskService        taskService    = new TaskService(taskRepository, fileRepository);
 		
 		boolean running = true;
@@ -21,7 +21,8 @@ public class Main {
 			System.out.println("4 - Task erledigen");
 			System.out.println("5 - Task löschen");
 			System.out.println("6 - Task suchen");
-			System.out.println("7 - Beenden");
+			System.out.println("7 - Tasks sortieren");
+			System.out.println("8 - Beenden");
 			System.out.println("Auswahl: ");
 			
 			int choice = readInt(scanner);
@@ -52,7 +53,8 @@ public class Main {
 					}
 				}
 				case 6 -> searchTask(scanner, taskService);
-				case 7 -> {
+				case 7 -> taskService.showTasksSortedByPriority();
+				case 8 -> {
 					taskService.saveTasks();
 					System.out.println("Tasks wurden gespeichert.");
 					System.out.println("Programm wird beendet");
@@ -83,7 +85,32 @@ public class Main {
 			return;
 		}
 		
-		taskService.addTask(title);
+		System.out.println("Priorität wählen:");
+		System.out.println("1 - LOW");
+		System.out.println("2 - MEDIUM");
+		System.out.println("3 - HIGH");
+		System.out.print("Auswahl: ");
+		
+		int priorityChoice = readInt(scanner);
+		
+		TaskPriority priority;
+		
+		switch (priorityChoice) {
+			case 1:
+				priority = TaskPriority.LOW;
+				break;
+			case 2:
+				priority = TaskPriority.MEDIUM;
+				break;
+			case 3:
+				priority = TaskPriority.HIGH;
+				break;
+			default:
+				System.out.println("Ungültige Priorität. Standard: MEDIUM");
+				priority = TaskPriority.MEDIUM;
+		}
+		
+		taskService.addTask(title, priority);
 	}
 	
 	public static void showTasks(TaskService taskService) {

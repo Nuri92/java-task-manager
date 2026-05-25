@@ -1,5 +1,0 @@
-1;lernen;IN_PROGRESS
-2;java;DONE
-3;sport;OPEN
-4;spring;OPEN
-5;testen;OPEN

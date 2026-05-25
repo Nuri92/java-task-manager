@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class TaskService {
@@ -12,7 +14,7 @@ public class TaskService {
 	}
 	
 	public void loadTasks() {
-		List<Task> loadedTasks = fileRepository.loadTask();
+		List<Task> loadedTasks = fileRepository.loadTasks();
 		repository.saveAll(loadedTasks);
 		
 		for (Task task : loadedTasks) {
@@ -26,8 +28,8 @@ public class TaskService {
 		fileRepository.saveTasks(repository.findAll());
 	}
 	
-	public void addTask(String title) {
-		Task task = new Task(nextId, title);
+	public void addTask(String title, TaskPriority priority) {
+		Task task = new Task(nextId, title, priority);
 		repository.save(task);
 		nextId++;
 		System.out.println("Task hinzufügen");
@@ -43,7 +45,12 @@ public class TaskService {
 		
 		for (Task currentTask : tasks) {
 			String status = formatStatus(currentTask.getStatus());
-			System.out.println("[" + currentTask.getId() + "] " + currentTask.getTitle() + " (" + status + ")");
+			System.out.println(
+					"[" + currentTask.getId() + "] "
+							+ currentTask.getTitle()
+							+ " (" + status + ")"
+							+ " [" + currentTask.getPriority() + "]"
+			);
 		}
 	}
 	
@@ -124,5 +131,34 @@ public class TaskService {
 		if (!found) {
 			System.out.println("Keine passenden Tasks gefunden.");
 		}
+	}
+	
+	public void showTasksSortedByPriority() {
+		List<Task> tasks = new ArrayList<>(repository.findAll());
+		
+		if (tasks.isEmpty()) {
+			System.out.println("Keine Tasks vorhanden.");
+			return;
+		}
+		
+		tasks.sort(
+				Comparator.comparing(Task::getPriority)
+				          .reversed()
+		);
+		
+		for (Task currentTask : tasks) {
+			printTask(currentTask);
+		}
+	}
+	
+	private void printTask(Task task) {
+		String status = formatStatus(task.getStatus());
+		
+		System.out.println(
+				"[" + task.getId() + "] "
+						+ task.getTitle()
+						+ " (" + status + ")"
+						+ " [" + task.getPriority() + "]"
+		);
 	}
 }

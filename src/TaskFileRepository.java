@@ -6,17 +6,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TaskFileRepository {
-	private static final String FILE_NAME = "tasks.txt";
+	
+	private final String fileName;
+	
+	public TaskFileRepository(String fileName) {
+		this.fileName = fileName;
+	}
 	
 	public void saveTasks(List<Task> tasks) {
 		try {
-			FileWriter writer = new FileWriter(FILE_NAME);
+			FileWriter writer = new FileWriter(fileName);
 			
 			for (Task task : tasks) {
 				writer.write(task.getId() + ";"
 						+ task.getTitle()
 						+ ";"
 						+ task.getStatus()
+						+ ";"
+						+ task.getPriority()
 						+ "\n");
 			}
 			writer.close();
@@ -25,26 +32,47 @@ public class TaskFileRepository {
 		}
 	}
 	
-	public ArrayList<Task> loadTask() {
+	public ArrayList<Task> loadTasks() {
+		
 		ArrayList<Task> tasks = new ArrayList<>();
 		
-		try (BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME))) {
+		try {
+			BufferedReader reader = new BufferedReader(
+					new FileReader(fileName)
+			);
 			
 			String line;
 			
 			while ((line = reader.readLine()) != null) {
+				
+				if (line.isBlank()) {
+					continue;
+				}
+				
 				String[] parts = line.split(";");
 				
-				int        id     = Integer.parseInt(parts[0]);
-				String     title  = parts[1];
-				TaskStatus status = TaskStatus.valueOf(parts[2]);
+				int          id       = Integer.parseInt(parts[0]);
+				String       title    = parts[1];
+				TaskStatus   status   = TaskStatus.valueOf(parts[2]);
+				TaskPriority priority = TaskPriority.valueOf(parts[3]);
 				
-				Task task = new Task(id, title, status);
+				Task task = new Task(id, title, status, priority);
+				
+				if (status == TaskStatus.IN_PROGRESS) {
+					task.markAsInProgress();
+				}
+				
+				if (status == TaskStatus.DONE) {
+					task.markAsCompleted();
+				}
+				
 				tasks.add(task);
-				
 			}
+			
+			reader.close();
+			
 		} catch (IOException e) {
-			System.out.println("Keine gespeicherten Tasks gefunden.");
+			System.out.println("Datei konnte nicht geladen werden.");
 		}
 		
 		return tasks;
