@@ -83,13 +83,9 @@ public class Main {
 	
 	public static void addTask(Scanner scanner, TaskService taskService) {
 		scanner.nextLine();
+		
 		System.out.println("Titel eingeben: ");
 		String title = scanner.nextLine();
-		
-		if (title.isBlank()) {
-			System.out.println("Titel darf nicht leer dein-");
-			return;
-		}
 		
 		System.out.println("Priorität wählen:");
 		System.out.println("1 - LOW");
@@ -99,24 +95,22 @@ public class Main {
 		
 		int priorityChoice = readInt(scanner);
 		
-		TaskPriority priority;
-		
-		switch (priorityChoice) {
-			case 1:
-				priority = TaskPriority.LOW;
-				break;
-			case 2:
-				priority = TaskPriority.MEDIUM;
-				break;
-			case 3:
-				priority = TaskPriority.HIGH;
-				break;
-			default:
+		TaskPriority priority = switch (priorityChoice) {
+			case 1 -> priority = TaskPriority.LOW;
+			case 2 -> priority = TaskPriority.MEDIUM;
+			case 3 -> priority = TaskPriority.HIGH;
+			default -> {
 				System.out.println("Ungültige Priorität. Standard: MEDIUM");
-				priority = TaskPriority.MEDIUM;
-		}
+				yield TaskPriority.MEDIUM;
+			}
+		};
 		
-		taskService.addTask(title, priority);
+		try {
+			Task createdTask = taskService.addTask(title, priority);
+			System.out.println("Task hinzugesfügt mit ID: " + createdTask.getId());
+		} catch (InvalidTaskTitleException e) {
+			System.out.println(e.getMessage());
+		}
 	}
 	
 	public static void showTasks(TaskService taskService) {
@@ -126,14 +120,16 @@ public class Main {
 	public static void markTaskAsInProgress(Scanner scanner, TaskService taskService) {
 		System.out.println("Task ID eingeben: ");
 		int taskId = readInt(scanner);
-		taskService.markAsInProgress(taskId);
+		Task updatedTask = taskService.markAsInProgress(taskId);
+		System.out.println("Task ist jetzt in Bearbeitung: " + updatedTask.getTitle());
 	}
 	
 	public static void markTaskAsCompleted(Scanner scanner, TaskService taskService) {
 		
 		System.out.print("Task ID eingeben: ");
 		int taskId = readInt(scanner);
-		taskService.markTaskAsCompleted(taskId);
+		Task updatedTask = taskService.markTaskAsCompleted(taskId);
+		System.out.println("Task wurde erledigt: " + updatedTask.getTitle());
 	}
 	
 	public static int readInt(Scanner scanner) {
@@ -150,6 +146,7 @@ public class Main {
 	public static void deleteTask(Scanner scanner, TaskService taskService) {
 		System.out.println("Task ID zum löschen eingeben: ");
 		int deleteId = readInt(scanner);
-		taskService.deleteTask(deleteId);
+		Task deletedTask = taskService.deleteTask(deleteId);
+		System.out.println("Task wurde gelöscht: " + deletedTask.getTitle());
 	}
 }

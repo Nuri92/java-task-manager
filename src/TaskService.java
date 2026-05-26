@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -28,11 +27,26 @@ public class TaskService {
 		fileRepository.saveTasks(repository.findAll());
 	}
 	
-	public void addTask(String title, TaskPriority priority) {
+	
+	/**
+	 * Creates and stores a new task.
+	 *
+	 * @param title title of the task
+	 * @param priority priority of the task
+	 * @return created task
+	 * @throws InvalidTaskTitleException if title is empty
+	 */
+	public Task addTask(String title, TaskPriority priority) {
+		
+		if (title == null || title.isBlank()) {
+			throw new InvalidTaskTitleException();
+		}
+		
 		Task task = new Task(nextId, title, priority);
 		repository.save(task);
 		nextId++;
-		System.out.println("Task hinzufügen");
+		
+		return task;
 	}
 	
 	public void showTasks() {
@@ -54,7 +68,7 @@ public class TaskService {
 		}
 	}
 	
-	public void markAsInProgress(int taskId) {
+	public Task markAsInProgress(int taskId) {
 		Task task = findById(taskId);
 		
 		if (task == null) {
@@ -62,9 +76,17 @@ public class TaskService {
 		}
 		
 		task.markAsInProgress();
+		return task;
 	}
 	
-	public void markTaskAsCompleted(int taskId) {
+	/**
+	 * Marks a task as completed.
+	 *
+	 * @param taskId ID of the task
+	 * @return updated task
+	 * @throws TaskNotFoundException if task does not exist
+	 */
+	public Task markTaskAsCompleted(int taskId) {
 		Task task = findById(taskId);
 		
 		if (task == null) {
@@ -72,10 +94,17 @@ public class TaskService {
 		}
 		
 		task.markAsCompleted();
-		System.out.println("Task ist in jetzt in Bearbeitung.");
+		return task;
 	}
 	
-	public void deleteTask(int taskId) {
+	/**
+	 * Deletes a task by ID.
+	 *
+	 * @param taskId ID of the task
+	 * @return deleted task
+	 * @throws TaskNotFoundException if task does not exist
+	 */
+	public Task deleteTask(int taskId) {
 		Task task = findById(taskId);
 		
 		if (task == null) {
@@ -84,7 +113,7 @@ public class TaskService {
 		
 		repository.delete(task);
 		
-		System.out.println("Task wurde gelöscht.");
+		return task;
 	}
 	
 	public Task findById(int taskId) {
@@ -107,29 +136,15 @@ public class TaskService {
 	}
 	
 	public void searchTask(String searchText) {
-		List<Task> tasks = repository.findAll();
+		List<Task> tasks = getTasksBySearchText(searchText);
 		
-		boolean found = false;
-		
-		for (Task currentTask : tasks) {
-			if (currentTask.getTitle()
-			               .toLowerCase()
-			               .contains(searchText.toLowerCase())) {
-				
-				String status = formatStatus(currentTask.getStatus());
-				
-				System.out.println(
-						"[" + currentTask.getId() + "] "
-								+ currentTask.getTitle()
-								+ " (" + status + ")"
-				);
-				
-				found = true;
-			}
+		if (tasks.isEmpty()) {
+			System.out.println("Keine passenden Tasks gefunden.");
+			return;
 		}
 		
-		if (!found) {
-			System.out.println("Keine passenden Tasks gefunden.");
+		for (Task currentTask : tasks) {
+			printTask(currentTask);
 		}
 	}
 	
@@ -157,17 +172,27 @@ public class TaskService {
 		);
 	}
 	
+	/**
+	 * Returns tasks sorted by priority.
+	 *
+	 * Order:
+	 * HIGH -> MEDIUM -> LOW
+	 *
+	 * @return sorted task list
+	 */
 	public List<Task> getTasksSortedByPriority() {
-		List<Task> tasks = new ArrayList<>(repository.findAll());
-		
-		tasks.sort(
-				Comparator.comparing(Task::getPriority)
-				          .reversed()
-		);
-		
-		return tasks;
+		return repository.findAll()
+		                 .stream()
+		                 .sorted(Comparator.comparing(Task::getPriority).reversed())
+		                 .toList();
 	}
 	
+	/**
+	 * Returns all tasks with the given priority.
+	 *
+	 * @param priority priority to filter by
+	 * @return filtered task list
+	 */
 	public void showTasksByPriority(TaskPriority priority) {
 		List<Task> tasks = getTasksByPriority(priority);
 		
@@ -182,13 +207,23 @@ public class TaskService {
 	}
 	
 	public List<Task> getTasksByPriority(TaskPriority priority) {
-		List<Task> filteredTasks = new ArrayList<>();
-		
-		for (Task currentTask : repository.findAll()) {
-			if (currentTask.getPriority() == priority) {
-				filteredTasks.add(currentTask);
-			}
-		}
-		return filteredTasks;
+		return repository.findAll()
+		                 .stream()
+		                 .filter(task -> task.getPriority() == priority)
+		                 .toList();
+	}
+	
+	public List<String> getTaskTitles() {
+		return repository.findAll()
+		                 .stream()
+		                 .map(Task::getTitle)
+		                 .toList();
+	}
+	
+	public List<Task> getTasksBySearchText(String searchText) {
+		return repository.findAll()
+		                 .stream()
+		                 .filter(task -> task.getTitle().toLowerCase().contains(searchText.toLowerCase()))
+		                 .toList();
 	}
 }

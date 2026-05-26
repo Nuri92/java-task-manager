@@ -146,4 +146,44 @@ public class TaskServiceTest {
 		assertEquals(TaskPriority.HIGH, highTasks.get(0).getPriority());
 		assertEquals(TaskPriority.HIGH, highTasks.get(1).getPriority());
 	}
+	
+	@Test
+	void shouldReturnTaskTitles() {
+		
+		service.addTask("Java lernen", TaskPriority.HIGH);
+		service.addTask("Git lernen", TaskPriority.LOW);
+		
+		List<String> titles = service.getTaskTitles();
+		
+		assertEquals(
+				"Java lernen",
+				titles.get(0)
+		);
+		
+		assertEquals(
+				"Git lernen",
+				titles.get(1)
+		);
+	}
+	
+	@Test
+	void shouldFindTasksBySearchText() {
+		service.addTask("Java lernen", TaskPriority.HIGH);
+		service.addTask("Git lernen", TaskPriority.MEDIUM);
+		service.addTask("Einkaufen", TaskPriority.LOW);
+		
+		List<Task> results = service.getTasksBySearchText("lernen");
+		
+		assertEquals(2, results.size());
+		assertEquals("Java lernen", results.get(0).getTitle());
+		assertEquals("Git lernen", results.get(1).getTitle());
+	}
+	
+	@Test
+	void shouldThrowExceptionWhenTitleIsBlank() {
+		assertThrows(
+				InvalidTaskTitleException.class,
+				() -> service.addTask("   ", TaskPriority.MEDIUM)
+		);
+	}
 }
